@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kitchen-Table Physicist</title>
+<meta name="description" content="Drop a phone clip of anything that moves and get the law behind it, with error bars, a self-test and the next experiment.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="/web/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/web/app.css">
+<script src="/web/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <a class="brand" href="#bench" aria-label="Kitchen-Table Physicist: the bench">
+    <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><path d="M6 5h20" class="mk-bar"/><path d="M16 5 21.5 22" class="mk-string"/><circle cx="22.2" cy="24.2" r="4" class="mk-bob"/><path d="M8.5 22.5c1.5 2.2 3.6 3.4 6.2 3.6" class="mk-arc"/></svg>
+    <span>Kitchen-Table Physicist</span>
+  </a>
+  <nav class="nav" aria-label="Main">
+    <a href="#bench" data-nav="bench">Bench</a>
+    <a href="#library" data-nav="library">Library</a>
+  </nav>
+  <span class="pill" id="mode" title="">Checking models</span>
+  <button class="btn primary" id="new" type="button">New experiment</button>
+</header>
+
+<main id="main" tabindex="-1">
+  <section id="bench-view" aria-labelledby="run-title">
+    <div class="runbar">
+      <div class="runhead">
+        <p class="meta" id="run-meta">&nbsp;</p>
+        <h1 id="run-title">Opening the bench</h1>
+      </div>
+      <label class="field runpick" for="run-select"><span>Experiment</span><select id="run-select"></select></label>
+    </div>
+
+    <div class="panel progress" id="progress" hidden>
+      <h2 class="h-sm">Working on it</h2>
+      <ol class="steps" id="steps"></ol>
+      <p class="muted" id="progress-note" aria-live="polite"></p>
+      <pre class="log mono" id="log"></pre>
+    </div>
+
+    <div class="panel failed" id="failed" hidden role="alert"></div>
+
+    <div class="empty panel" id="empty" hidden>
+      <h2>No experiments yet</h2>
+      <p>Film something that moves with a sheet of A4 paper in view, then drop the clip here. Or start with a pendulum rendered with known physics, so you can check the answers.</p>
+      <div class="row"><button class="btn primary" type="button" data-act="new">New experiment</button><button class="btn" type="button" data-act="sample">Run the sample</button></div>
+    </div>
+
+    <div class="bench" id="bench" hidden>
+      <div class="instrument">
+        <figure class="stage" id="stage">
+          <video id="video" muted playsinline preload="auto" aria-label="The clip"></video>
+          <canvas id="overlay" aria-hidden="true"></canvas>
+          <p class="phase mono" id="phase"></p>
+          <figcaption class="legend">
+            <span class="key k-m">Measured</span><span class="key k-l">Law</span><span class="key k-f">Forecast</span>
+          </figcaption>
+        </figure>
+
+        <div class="transport">
+          <button class="icon-btn" id="play" type="button" aria-label="Play">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path id="play-glyph" d="M8 5v14l11-7z"/></svg>
+          </button>
+          <output class="mono clock" id="clock" for="scrub">0.000 s</output>
+          <div class="scrub">
+            <input type="range" id="scrub" min="0" max="1000" value="0" step="1" aria-label="Position in the clip">
+            <span class="split" id="split-mark" aria-hidden="true"></span>
+          </div>
+          <div class="seg" role="group" aria-label="Playback speed">
+            <button type="button" data-rate="0.25">¼×</button><button type="button" data-rate="0.5" aria-pressed="true">½×</button><button type="button" data-rate="1">1×</button>
+          </div>
+          <label class="toggle"><input type="checkbox" id="forecast" checked><span>Forecast</span></label>
+        </div>
+
+        <div class="panel chartbox">
+          <div class="chart-head">
+            <h2 class="h-sm" id="chart-title">Position against time</h2>
+            <p class="mono readout" id="readout" aria-live="off"></p>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart" role="img" aria-labelledby="chart-title" aria-describedby="chart-desc"></canvas>
+            <div class="tip mono" id="tip" hidden></div>
+          </div>
+          <p class="muted small" id="chart-desc"></p>
+        </div>
+      </div>
+
+      <article class="notebook" id="notebook" aria-label="Lab notebook"></article>
+    </div>
+  </section>
+
+  <section id="library-view" aria-labelledby="lib-title" hidden>
+    <div class="runbar">
+      <div class="runhead">
+        <p class="meta">Everything this phone has worked out, newest first</p>
+        <h1 id="lib-title">Library of laws</h1>
+      </div>
+      <label class="field runpick" for="lib-q"><span>Search</span><input id="lib-q" type="search" placeholder="pendulum, damped, falsified" autocomplete="off"></label>
+    </div>
+    <ol class="laws" id="laws"></ol>
+  </section>
+</main>
+
+<dialog id="dlg" aria-labelledby="dlg-title">
+  <form id="form" method="dialog" novalidate>
+    <header class="dlg-head">
+      <h2 id="dlg-title">New experiment</h2>
+      <button class="icon-btn" type="button" id="dlg-close" aria-label="Close"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </header>
+
+    <label class="drop" id="drop" for="file">
+      <input type="file" id="file" accept="video/*,.mp4,.mov,.m4v,.webm,.mkv,.avi" required>
+      <strong id="drop-title">Drop a clip here, or choose one</strong>
+      <span class="muted" id="drop-sub">Phone static, square to the motion, a sheet of A4 paper in the same plane</span>
+    </label>
+
+    <fieldset class="field">
+      <legend>What to track</legend>
+      <div class="choice">
+        <label><input type="radio" name="track" value="auto" id="track-auto"><span><b>Let the model look</b><small id="auto-note">Muse Wonder picks the object and the scale reference</small></span></label>
+        <label><input type="radio" name="track" value="color" id="track-color" checked><span><b>A coloured sticker</b><small>Fast, works offline</small></span></label>
+      </div>
+      <div class="swatches" id="swatches" role="radiogroup" aria-label="Sticker colour">
+        <label><input type="radio" name="color" value="green" checked><i style="--sw:#2bb24c"></i>Green</label>
+        <label><input type="radio" name="color" value="orange"><i style="--sw:#f07a1a"></i>Orange</label>
+        <label><input type="radio" name="color" value="blue"><i style="--sw:#2a6fdb"></i>Blue</label>
+        <label><input type="radio" name="color" value="yellow"><i style="--sw:#e8c21a"></i>Yellow</label>
+      </div>
+    </fieldset>
+
+    <div class="grid2">
+      <label class="field" for="fps"><span>Real frame rate <small>slow-mo clips often say 30</small></span>
+        <input id="fps" inputmode="decimal" placeholder="from the file, e.g. 240"></label>
+      <label class="field" for="ref"><span>Reference long side, metres <small>A4 is 0.297</small></span>
+        <input id="ref" inputmode="decimal" value="0.297"></label>
+    </div>
+    <label class="field" for="note"><span>What's in the clip <small>sizes help: string length, ramp angle</small></span>
+      <textarea id="note" rows="2" maxlength="400" placeholder="Keys on a 30 cm string, pulled back about 20 degrees"></textarea></label>
+    <label class="field" for="verify"><span>Test a prediction from <small>optional</small></span>
+      <select id="verify"><option value="">Nothing, this is a new experiment</option></select></label>
+
+    <p class="form-error" id="form-error" role="alert" hidden></p>
+    <div class="upload" id="upload" hidden><span class="bar"><i id="upload-bar"></i></span><span class="mono" id="upload-pct">0%</span></div>
+    <div class="dlg-actions">
+      <button class="btn ghost" type="button" data-act="sample">Use the sample instead</button>
+      <button class="btn primary" type="submit" id="submit">Start the lab</button>
+    </div>
+  </form>
+</dialog>
+</body>
+</html>

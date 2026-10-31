@@ -172,6 +172,17 @@ def discover(data, axis, depth=4, beam=4, max_terms=4):
     return sorted(done, key=lambda r: r["score"])
 
 
+def ladder(found):
+    """The best law at each size: the steps the search climbed, for the notebook view."""
+    best = {}
+    for r in found:
+        k = len(r["params"])
+        if k not in best or r["score"] < best[k]["score"]:
+            best[k] = r
+    return [{"expr": best[k]["expr"], "k": k, "holdout_rmse": best[k]["holdout_rmse"], "score": best[k]["score"]}
+            for k in sorted(best)]
+
+
 def brief(r):
     return {k: v for k, v in r.items() if k not in ("cov", "terms")}
 
@@ -213,7 +224,7 @@ def summary(d, note, verify):
             f"{pred}Sample ({','.join(['t'] + ax)}):\n{table}")
 
 
-def agent(data, note, verify, turns):
+def agent(data, note, verify, turns, seen):
     from openai import OpenAI
     client = OpenAI(base_url=os.environ.get("MODEL_BASE_URL", "https://api.meta.ai/v1"), api_key=os.environ["MODEL_API_KEY"])
     model = os.environ.get("MUSE_MODEL", "muse-spark-1.3")
@@ -228,7 +239,9 @@ def agent(data, note, verify, turns):
             if a.get("axis") not in data:
                 r = {"error": f"axis must be one of {axes(data)}"}
             elif c.function.name == "search":
-                r = [brief(x) for x in discover(data, a["axis"])[:5]]
+                found = discover(data, a["axis"])
+                seen += found
+                r = [brief(x) for x in found[:5]]
             else:
                 r = brief(fit(data, a["axis"], a["expr"], a["params"], a.get("p0")))
             print(f"{c.function.name} {a}\n    -> {str(r)[:300]}")
@@ -239,17 +252,34 @@ def agent(data, note, verify, turns):
     return json.loads(text[text.find("{"): text.rfind("}") + 1])
 
 
-def offline(data):
-    """No model: search every axis, keep the one whose motion the best law explains most."""
+def offline(data, seen):
+    """No model: search the axis that moves most."""
     if not axes(data):
         raise SystemExit("no coordinate columns in the CSV")
     ax = max(axes(data), key=lambda a: data[a].std())
     found = discover(data, ax)
     if not found:
         raise SystemExit(f"no law fits {ax}(t)")
+    seen += found
     best = found[0]
-    return {"law": best["expr"], "axis": ax, "expr": best["expr"], "params": best["params"],
-            "derived": [], "explanation": None, "prediction": None, "measured": None}
+    words, derived = [], []
+    for term in best["terms"]:  # read the law back from its own building blocks
+        w, b, a = (re.search(p, term) for p in (r"cos\((c\d+)\*t", r"exp\(-(c\d+)\*t\)", r"(c\d+)\*t\*\*2"))
+        if w:
+            words.append("a damped oscillation" if b else "an oscillation")
+            derived.append({"name": "Period", "expr": f"2*pi/abs({w[1]})", "unit": "s", "meaning": "time for one full cycle"})
+        elif b:
+            words.append("an exponential decay")
+        elif a:
+            words.append("constant acceleration")
+            derived.append({"name": "Acceleration", "expr": f"2*{a[1]}", "unit": "m/s^2", "meaning": f"along {ax}, from the t² term"})
+        elif "*t" in term:
+            words.append("a steady drift")
+        if b:
+            derived.append({"name": "Decay time", "expr": f"1/{b[1]}", "unit": "s", "meaning": "time to fall to 37% of its size"})
+    law = (" plus ".join(words) or "a constant").capitalize() + f" in {ax}"
+    return {"law": law, "axis": ax, "expr": best["expr"], "params": best["params"],
+            "derived": derived, "explanation": None, "prediction": None, "measured": None}
 
 
 def finish(data, r, verify=None, tol=0.05):
@@ -295,9 +325,11 @@ def main():
 
     data = load(a.csv)
     verify = (json.load(open(a.verify)).get("prediction") or None) if a.verify else None
-    r = offline(data) if a.offline else agent(data, a.note, verify, a.turns)
+    seen = []
+    r = offline(data, seen) if a.offline else agent(data, a.note, verify, a.turns, seen)
     r = finish(data, r, verify, a.tol)
-    r.update(note=a.note, csv=a.csv)
+    r.update(note=a.note, csv=a.csv, tried=len(seen),
+             candidates=[c for c in ladder(seen) if c["k"] <= len(r["params"]) + 3])
     json.dump(r, open(a.out, "w"), indent=2)
 
     print(f"\nLAW  {r['axis']}(t) = {r['expr']}   holdout RMSE {r['holdout_rmse']:.2g} m")

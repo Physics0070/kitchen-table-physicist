@@ -20,7 +20,8 @@ def main():
     cap = cv2.VideoCapture(video)
     fps = fps_override or cap.get(cv2.CAP_PROP_FPS)
     w, h = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    vw = cv2.VideoWriter(out, cv2.VideoWriter_fourcc(*"mp4v"), 30, (w, h))  # play back at 30 = slow motion
+    codec = "VP80" if out.endswith(".webm") else "mp4v"  # webm plays in browsers
+    vw = cv2.VideoWriter(out, cv2.VideoWriter_fourcc(*codec), 30, (w, h))  # play back at 30 = slow motion
     trail, i = [], 0
     while True:
         ok, frame = cap.read()

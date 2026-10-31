@@ -10,8 +10,34 @@ clip.mp4 ─► see.py ─► track.py ─► law.py ─► conserve.py ─► l
              watch)     metres)     self-test)  constant)      re-testing)   prediction video)
 ```
 
+![The bench: the clip with the measured point (green), the law (magenta) and its forecast, and the lab notebook](docs/bench.png)
+
+## Run it
+
 ```
 pip install -r requirements.txt
+python app.py            # open http://127.0.0.1:8000
+```
+
+The first launch renders a sample pendulum with known physics and analyses it, so the app opens on a
+working example. Then **New experiment**: drop a clip, say what to track, watch the stages run, and read
+the result on the bench:
+
+- **The replay.** The clip with the tracked point (green) and the law's position (magenta). The forecast
+  dots show where the law puts the object over the next half second. After the 70% line the law is
+  predicting frames it never saw.
+- **The chart.** The law line is drawn in full; the measured dots land on it as the clip plays.
+- **The notebook.** The law in words and as a formula, its constants with error bars, the ladder of laws
+  the search climbed, the self-test, conserved quantities, how the clip fares against your library, and
+  the next experiment (with a model key).
+- **The library.** Every law found, searchable, marked standing, incomplete or broken by a later clip.
+
+The app is stdlib Python plus plain HTML/CSS/JS: no build step and no extra dependencies. It listens on
+localhost only and has no login, so keep it there unless the network is yours.
+
+Command line, same pipeline:
+
+```
 python lab.py clip.mp4                                         # vision model decides everything
 python lab.py clip.mp4 --color green --fps 240 --note "keys on a 30 cm string" --offline   # no API key
 python lab.py clip40.mp4 --verify runs/clip/fit.json           # test the last run's prediction
@@ -24,7 +50,8 @@ The Meta Model API is needed for `see.py` (Muse Wonder), SAM tracking and the re
 
 ## What it does now (verified)
 
-Results below come from tests that run in under a minute (`python test_*.py`). The L1 test renders a
+Results below come from the test scripts (`python test_*.py`; `test_app.py` drives the web app over HTTP
+end to end, including upload limits, path traversal and video range requests). The L1 test renders a
 pendulum video with known physics and runs the real tracker on it; **no real phone footage has been run
 yet**, and the API paths have not been called live.
 

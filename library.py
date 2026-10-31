@@ -67,6 +67,7 @@ def main():
     c.add_argument("--about", nargs="*", default=[], help="only laws matching these words")
     c.add_argument("--ratio", type=float, default=2.0, help="holdout error vs best fresh law that counts as broken")
     c.add_argument("--mark", action="store_true", help="record broken laws in the library")
+    c.add_argument("-o", "--out", help="also write the results as JSON")
     a = ap.parse_args()
 
     if a.cmd == "add":
@@ -80,6 +81,9 @@ def main():
         res = check(load(a.csv), [e for e in laws if e["status"] == "standing"], a.ratio)
         for r in res:
             print(f"#{r['id']} {'BROKEN' if r['broken'] else 'holds '}  {r['why']}")
+        if a.out:
+            byid = {e["id"]: e for e in laws}
+            json.dump([{**r, "law": byid[r["id"]].get("law"), "expr": byid[r["id"]]["expr"]} for r in res], open(a.out, "w"))
         if a.mark:
             es, broken = entries(), {r["id"] for r in res if r["broken"]}
             for e in es:
