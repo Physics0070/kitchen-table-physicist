@@ -211,7 +211,8 @@
   }
 
   /* ---------- the one clock ---------- */
-  let raf = 0, t0 = performance.now();
+  let raf = 0, t0 = performance.now(), gl = null, last3d = 0, heroOn = true;
+  const hero2d = (p) => (gl ? gl.render(p, timeAt(p), performance.now()) : drawDrop(p));
   function frame(now) {
     raf = 0;
     const dt = Math.min(100, now - (last || now)); last = now;
@@ -219,7 +220,9 @@
     if (scrub) {
       shown += (target - shown) * (1 - Math.pow(1 - 0.14, dt / 16.667));
       if (Math.abs(target - shown) < 0.0004) shown = target; else busy = true;
-      drawDrop(shown); drawBands(shown, now);
+      if (!gl) drawDrop(shown);
+      else if (heroOn && (busy || now - last3d > 33)) { gl.render(shown, timeAt(shown), now); last3d = now; }
+      drawBands(shown, now);
       if (now - t0 < 950) busy = true;
     }
     const hTarget = holding ? 1 : 0, hPrev = h;
@@ -234,11 +237,14 @@
     scrub = !RM.matches;
     root.classList.toggle("scrub", scrub);
     bands.forEach((b) => { b.o = -1; b.y = -1; b.el.style.opacity = ""; b.el.style.translate = ""; b.el.removeAttribute("aria-hidden"); });
-    if (!scrub) { drawDrop(1); h = holding ? 1 : h; drawField(0); } else { target = shown = heroProgress(); t0 = performance.now() - (shown > 0.02 ? 2000 : 0); }
+    if (!scrub) { hero2d(1); h = holding ? 1 : h; drawField(0); } else { target = shown = heroProgress(); t0 = performance.now() - (shown > 0.02 ? 2000 : 0); }
     sayHold(); drawSplit(); wake();
   }
   addEventListener("scroll", () => { if (scrub) { target = heroProgress(); wake(); } }, { passive: true });
-  addEventListener("resize", () => { if (!scrub) drawDrop(1); drawSplit(); wake(); });
+  addEventListener("resize", () => { if (!scrub) hero2d(1); drawSplit(); wake(); });
+  addEventListener("ktp3d", () => { gl = window.KTP3D; applyMode(); });  // the WebGL scene is ready: it takes over the hero
+  new IntersectionObserver(([e]) => { heroOn = e.isIntersecting; root.classList.toggle("in-hero", heroOn); if (heroOn) wake(); }).observe(hero);
+  if (window.KTP3D) gl = window.KTP3D;
   RM.addEventListener("change", applyMode);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) wake(); });
   new IntersectionObserver((es) => es.forEach((e) => e.isIntersecting && e.target.classList.add("in")), { threshold: 0.2 }).observe($("#proof"));

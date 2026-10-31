@@ -16,8 +16,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300&family=Geist:wght@300;400;500&family=Geist+Mono:wght@400&display=swap">
 <link rel="stylesheet" href="assets/site.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script src="assets/data.js" defer></script>
 <script src="assets/site.js" defer></script>
+<script type="module" src="assets/scene3d.js"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -38,6 +40,8 @@
 <main id="main" tabindex="-1">
   <section class="drop" id="top" aria-label="A falling ball, measured and predicted">
     <div class="stage">
+      <canvas id="gl" role="img" aria-label="A falling ball in a dark observatory. White flashes are measured frames; blue rings are where the law predicted the ball would be, hung in space before it got there."></canvas>
+      <div id="lens" aria-hidden="true"></div>
       <canvas id="drop" role="img" aria-label="A multiflash photograph of a falling ball. White exposures are measured frames; blue hollow exposures are where the law predicted the ball would be, drawn before it got there."></canvas>
       <div class="bands">
         <div class="band b1" data-a="0" data-b="0.15"><h1 class="display">Drop anything in front of a phone.</h1><p class="sub">Watch what happens when you scroll.</p></div>

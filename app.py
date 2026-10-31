@@ -21,6 +21,17 @@ CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' 
 jobs, lock = {}, threading.Lock()
 
 
+def load_env(path=os.path.join(HERE, ".env")):
+    """KEY=value lines from .env into the environment (never overrides a real env var, never printed).
+    The lab runs as a child process, so it inherits these."""
+    if not os.path.exists(path):
+        return
+    for line in open(path, encoding="utf-8"):
+        k, sep, v = line.strip().partition("=")
+        if sep and k and not k.startswith("#"):
+            os.environ.setdefault(k.strip(), v.strip().strip("'\""))
+
+
 def read_json(path, default=None):
     try:
         return json.load(open(path))
@@ -271,6 +282,7 @@ def main():
     ap.add_argument("--host", default="127.0.0.1", help="no login: keep it on localhost unless the network is yours")
     ap.add_argument("--port", type=int, default=8000)
     a = ap.parse_args()
+    load_env()
     srv = serve(a.host, a.port)
     if not any(run_dir(r) for r in os.listdir(RUNS)):
         threading.Thread(target=sample, daemon=True).start()  # first launch opens on a working example

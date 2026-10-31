@@ -34,6 +34,8 @@ def main():
     ap.add_argument("--offline", action="store_true", help="no vision or reasoning model; tracking still uses SAM unless --color")
     ap.add_argument("--every", default="1", help="use every Nth frame (SAM cost)")
     a = ap.parse_args()
+    from app import load_env
+    load_env()  # MODEL_API_KEY etc. from .env, for the steps that call the models
 
     out = a.out or os.path.join("runs", os.path.splitext(os.path.basename(a.video))[0])
     os.makedirs(out, exist_ok=True)
