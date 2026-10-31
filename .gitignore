@@ -1,0 +1,6 @@
+*.mp4
+*.mov
+.env
+__pycache__/
+runs/
+laws.jsonl

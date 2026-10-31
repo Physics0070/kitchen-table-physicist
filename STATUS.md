@@ -1,0 +1,5 @@
+- **Done (synthetic proofs):** L1 pipeline, L2 discovery + σ + self-test, L3 loop logic, L5 conserved quantities, L6 library/falsify/report. L4 `see.py` written.
+- **Next:** real footage: pendulum + stopwatch (L1 proof), then 40 cm pendulum with `--verify` (L3 proof).
+- **Open:** no API key yet, so SAM `first_box`, Wonder input and the Spark agent loop are untested live. No audio.
+- **Proofs still owed on real clips:** L1 (5% vs stopwatch), L2 (three systems), L3 (on-screen prediction), L4 (unseen clip), L5 (coin collision), L6 (5+ laws).
+- **Ideas:** discriminating experiment (agent asks for the swing angle where rival laws differ most); live mode predicting the next second; Galileo's ramp re-run.
