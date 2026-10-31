@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kitchen-Table Physicist</title>
+<meta name="description" content="Drop anything in front of a phone. It finds the law of motion nobody gave it, then predicts the frames it has never seen, with error bars.">
+<meta name="theme-color" content="#070708">
+<meta property="og:title" content="Kitchen-Table Physicist">
+<meta property="og:description" content="A phone video in. A law out, with error bars, tested on frames it never saw.">
+<!-- DEPLOY STEP: set og:url and og:image to absolute live URLs before zipping -->
+<meta property="og:url" content="https://example.invalid/">
+<meta property="og:image" content="https://example.invalid/assets/og.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23070708'/%3E%3Cpath d='M7 7h18' stroke='%238f8f93' stroke-width='1.5'/%3E%3Cpath d='M16 7l4.6 14' stroke='%23fff' stroke-width='1.2'/%3E%3Ccircle cx='21.3' cy='23' r='3.4' fill='%23fff'/%3E%3Ccircle cx='10' cy='23' r='3.4' fill='none' stroke='%231954ec' stroke-width='1.4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300&family=Geist:wght@300;400;500&family=Geist+Mono:wght@400&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/data.js" defer></script>
+<script src="assets/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<canvas id="field" aria-hidden="true"></canvas>
+
+<header class="corner">
+  <a class="mark micro" href="#top" aria-label="Kitchen-Table Physicist, back to top">
+    <svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><path d="M5 6h22" class="m-bar"/><path d="M16 6l4.8 15" class="m-str"/><circle cx="21.6" cy="23.4" r="3.6" class="m-bob"/><circle cx="9.6" cy="23.4" r="3.6" class="m-ghost"/></svg>
+    <span>Kitchen-Table Physicist</span>
+  </a>
+  <nav aria-label="Main">
+    <a class="micro link" href="#how">How it works</a>
+    <a class="micro link" href="#break">Break it</a>
+    <a class="micro link code" href="https://github.com/Physics0070/kitchen-table-physicist" rel="noopener">See the code <span aria-hidden="true">↗</span></a>
+  </nav>
+</header>
+
+<main id="main" tabindex="-1">
+  <section class="drop" id="top" aria-label="A falling ball, measured and predicted">
+    <div class="stage">
+      <canvas id="drop" role="img" aria-label="A multiflash photograph of a falling ball. White exposures are measured frames; blue hollow exposures are where the law predicted the ball would be, drawn before it got there."></canvas>
+      <div class="bands">
+        <div class="band b1" data-a="0" data-b="0.15"><h1 class="display">Drop anything in front of a phone.</h1><p class="sub">Watch what happens when you scroll.</p></div>
+        <div class="band b2" data-a="0.17" data-b="0.44"><p class="display">It measures every frame.</p><p class="sub">Thirty flashes a second, turned from pixels into metres against a sheet of A4 paper.</p></div>
+        <div class="band b3" data-a="0.46" data-b="0.63"><p class="display">It finds the law. Nobody told it which.</p><ol class="rivals mono" id="rivals"></ol></div>
+        <div class="band b4" data-a="0.65" data-b="0.88"><p class="display">Then it predicts what it has <em>not</em> seen.</p><p class="sub">The hollow blue flashes were drawn before the ball got there.</p></div>
+        <div class="band b5 settle" data-a="0.90" data-b="1.01">
+          <p class="micro muted">Found, not given</p>
+          <p class="readout mono" id="g-readout">g = 9.808 ± 0.002 m/s²</p>
+          <p class="sub">A phone video in. A law out, with error bars, tested on frames it never saw.</p>
+          <div class="ctas"><a class="btn" href="https://github.com/Physics0070/kitchen-table-physicist" rel="noopener">See the code</a><a class="link micro" href="#proof">The numbers</a></div>
+        </div>
+      </div>
+      <p class="scrollcue micro" aria-hidden="true"><span>Scroll to drop</span><i></i></p>
+    </div>
+  </section>
+
+  <section class="sec proof" id="proof" aria-labelledby="proof-h">
+    <div class="col-l">
+      <p class="micro muted">Proof</p>
+      <h2 id="proof-h" class="heading">Every number on this page came out of the pipeline.</h2>
+      <p class="body">Nothing here is typed in by hand. A build script runs the real code and this page draws what it returns.</p>
+    </div>
+    <ul class="stats col-r">
+      <li class="stat"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="56" class="ring-bg"/><circle cx="60" cy="60" r="56" class="ring" style="--f:1"/></svg><b class="mono" id="s-tried">67</b><span class="micro muted">laws tried on the drop</span></li>
+      <li class="stat"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="56" class="ring-bg"/><circle cx="60" cy="60" r="56" class="ring" style="--f:.9998"/></svg><b class="mono" id="s-err">0.02%</b><span class="micro muted">from the true g</span></li>
+      <li class="stat"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="56" class="ring-bg"/><circle cx="60" cy="60" r="56" class="ring" style="--f:1"/></svg><b class="mono">6/6</b><span class="micro muted">test suites passing</span></li>
+      <li class="stat"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="56" class="ring-bg"/><circle cx="60" cy="60" r="56" class="ring" style="--f:0"/></svg><b class="mono">0</b><span class="micro muted">formulas given to it</span></li>
+    </ul>
+  </section>
+
+  <section class="sec how" id="how" aria-labelledby="how-h">
+    <div class="col-l">
+      <p class="micro muted">How it works</p>
+      <h2 id="how-h" class="heading">Five steps. No formula handed in.</h2>
+    </div>
+    <ol class="steps col-r">
+      <li><span class="mono num">01</span><div><h3>Look</h3><p>A vision model watches the clip and decides what is worth tracking, and which object in frame has a size it knows.</p></div></li>
+      <li><span class="mono num">02</span><div><h3>Track</h3><p>Segmentation or a coloured sticker follows the object frame by frame. A sheet of A4 turns pixels into metres.</p></div></li>
+      <li><span class="mono num">03</span><div><h3>Discover</h3><p>A search builds laws from generic pieces, guided by the data's own mean, slope and rhythm. Each law is fitted on the first 70% of the clip and scored on the 30% it never saw.</p></div></li>
+      <li><span class="mono num">04</span><div><h3>Try to break it</h3><p>The winning law is refitted on each half of the clip. A true law keeps its constants. One that drifts is marked incomplete.</p></div></li>
+      <li><span class="mono num">05</span><div><h3>Remember</h3><p>Every law goes into a library. A later clip that disagrees with an old law marks it broken.</p></div></li>
+    </ol>
+  </section>
+
+  <section class="sec break" id="break" aria-labelledby="break-h">
+    <div class="col-l">
+      <p class="micro muted">The self-test</p>
+      <h2 id="break-h" class="heading">Try to break its law yourself.</h2>
+      <p class="body">This is the app's own pendulum. Its law predicted the unseen frames to half a millimetre. A true law keeps its constants on any slice of the clip. Hold the button to fit the second half on its own and see where its swing frequency lands.</p>
+      <button class="btn hold" id="hold" type="button" aria-describedby="hold-help"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="10" class="h-bg"/><circle cx="12" cy="12" r="10" class="h-fg" id="hold-ring"/></svg><span>Hold to split the clip</span></button>
+      <p class="micro muted" id="hold-help">Press and hold, or hold the space bar while the button has focus</p>
+    </div>
+    <figure class="col-r splitfig">
+      <canvas id="split" role="img" aria-label="Swing frequency fitted on each half of the pendulum clip, with error bars. The second half lands outside the zone a complete law would keep it in."></canvas>
+      <figcaption class="mono" id="split-out" aria-live="polite">The same law, fitted on each half of the clip. Hold to fit the second half.</figcaption>
+    </figure>
+  </section>
+
+  <section class="sec faq" aria-labelledby="faq-h">
+    <div class="col-l">
+      <p class="micro muted">Questions judges ask</p>
+      <h2 id="faq-h" class="heading">The four we hear most.</h2>
+    </div>
+    <dl class="col-r qa">
+      <div><dt>Is anything hardcoded?</dt><dd>No formula families and no list of experiments. The search composes laws from constants, powers of time, waves and decays, and the model can propose any other formula on top. On the drop it tried 67 laws and kept a 2-constant one.</dd></div>
+      <div><dt>Doesn't the model just recite textbook formulas?</dt><dd>It can't win that way. Every law is scored in code on frames it never saw. On the drop, a line plus a wave came within 1.8 mm using 5 constants. The t² law did better, 1.4 mm, with 2.</dd></div>
+      <div><dt>Is running model-written maths safe?</dt><dd>Each formula is parsed and checked before it runs: arithmetic and a short list of functions only, no attribute access, no builtins, numbers forced to floats so a huge power fails fast. An independent review tried to break it. The two holes it found are closed and tested.</dd></div>
+      <div><dt>Has it run on real footage?</dt><dd>Not yet. Everything on this page comes from rendered clips with known physics, which is exactly why the answers can be checked. A real phone clip of a pendulum is the next step.</dd></div>
+    </dl>
+  </section>
+
+  <section class="sec close" aria-labelledby="close-h">
+    <div class="col-l">
+      <h2 id="close-h" class="heading xl">Read the code that did this.</h2>
+      <div class="ctas"><a class="btn" href="https://github.com/Physics0070/kitchen-table-physicist" rel="noopener">See the code on GitHub</a></div>
+    </div>
+    <div class="col-r">
+      <p class="micro muted">Run it yourself</p>
+      <pre class="mono cmd"><code>pip install -r requirements.txt
+python app.py</code></pre>
+      <p class="body">Opens on a rendered pendulum it has already analysed. No API key needed for that.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span class="micro">Kitchen-Table Physicist</span>
+  <span class="micro muted">Results shown come from rendered clips with known physics. Real footage is next.</span>
+</footer>
+</body>
+</html>
