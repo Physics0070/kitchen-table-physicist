@@ -34,6 +34,7 @@
   <nav aria-label="Main">
     <a class="micro link" href="#how">How it works</a>
     <a class="micro link" href="#break">Break it</a>
+    <a class="micro link demo" href="lab/">Open the demo</a>
     <a class="micro link code" href="https://github.com/Physics0070/kitchen-table-physicist" rel="noopener">See the code <span aria-hidden="true">↗</span></a>
   </nav>
 </header>
@@ -51,7 +52,7 @@
           <p class="micro muted">Found, not given</p>
           <p class="readout mono" id="g-readout">g = 9.808 ± 0.002 m/s²</p>
           <p class="sub">A phone video in. A law out, with error bars, tested on frames it never saw.</p>
-          <div class="ctas"><a class="btn" href="https://github.com/Physics0070/kitchen-table-physicist" rel="noopener">See the code</a><a class="link micro" href="#proof">The numbers</a></div>
+          <div class="ctas"><a class="btn" href="lab/">Open the demo</a><a class="link micro" href="https://github.com/Physics0070/kitchen-table-physicist" rel="noopener">See the code</a></div>
         </div>
       </div>
       <p class="scrollcue micro" aria-hidden="true"><span>Scroll to drop</span><i></i></p>
@@ -115,14 +116,15 @@
 
   <section class="sec close" aria-labelledby="close-h">
     <div class="col-l">
-      <h2 id="close-h" class="heading xl">Read the code that did this.</h2>
-      <div class="ctas"><a class="btn" href="https://github.com/Physics0070/kitchen-table-physicist" rel="noopener">See the code on GitHub</a></div>
+      <h2 id="close-h" class="heading xl">Now watch it work.</h2>
+      <p class="body">The demo is the real lab bench. Here it replays recorded runs, including one where a language model played the scientist. Run the app and the same bench analyses your own clips.</p>
+      <div class="ctas"><a class="btn" href="lab/">Open the demo</a><a class="link micro" href="https://github.com/Physics0070/kitchen-table-physicist" rel="noopener">See the code</a></div>
     </div>
     <div class="col-r">
       <p class="micro muted">Run it yourself</p>
       <pre class="mono cmd"><code>pip install -r requirements.txt
 python app.py</code></pre>
-      <p class="body">Opens on a rendered pendulum it has already analysed. No API key needed for that.</p>
+      <p class="body">Open http://127.0.0.1:8000 for this page, then Open the demo for the live bench. A model key in .env is optional.</p>
     </div>
   </section>
 </main>

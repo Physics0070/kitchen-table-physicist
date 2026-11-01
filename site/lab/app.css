@@ -268,55 +268,8 @@ dialog[open] { animation: rise .32s var(--settle); }
   .legend { display: none; }
 }
 
-/* ---------- intro: the showcase's 3D drop, then the bench. Always dark: it is a scene, not UI. ---------- */
-.intro { position: relative; height: 820vh; background: #070708; color: #fff; }
-.intro-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
-.intro #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.intro #lens { position: absolute; inset: 0; opacity: 0; pointer-events: none; mix-blend-mode: screen;
-  background: radial-gradient(circle at 62% 50%, rgba(160, 195, 255, .95), rgba(25, 84, 236, .35) 45%, rgba(7, 7, 8, 0) 75%); }
-.intro-stage::after { content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(90deg, rgba(7, 7, 8, .9) 0%, rgba(7, 7, 8, .55) 30%, rgba(7, 7, 8, 0) 56%); }
-.ibands { position: absolute; z-index: 2; left: max(24px, 6vw); top: 0; bottom: 0; width: min(46%, 640px); }
-.iband { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); opacity: 0; text-shadow: 0 1px 2px #070708e6, 0 4px 18px #070708cc; }
-.idisplay { font: 300 clamp(44px, 5.4vw, 88px)/1.05 "Cormorant Garamond", Georgia, serif; margin: 0; max-width: 13ch; text-wrap: balance; }
-.idisplay em { font-style: italic; }
-.isub { color: #8f8f93; font: 300 17px/1.55 "Geist", system-ui, sans-serif; margin: 24px 0 0; max-width: 36ch; }
-.imicro { font: 400 11px/1.3 "Geist", system-ui, sans-serif; letter-spacing: .4em; text-transform: uppercase; color: #8f8f93; margin: 0; }
-.ireadout { font: 400 clamp(26px, 2.7vw, 44px)/1.2 "Geist Mono", ui-monospace, monospace; margin: 16px 0 0; white-space: nowrap; letter-spacing: -.02em; }
-.irivals { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 10px; font: 400 13px "Geist Mono", ui-monospace, monospace; }
-.irivals li { display: grid; grid-template-columns: 9.5rem 1fr; gap: 14px; color: #8f8f93; opacity: .25; transition: opacity .3s; }
-.irivals li.on { opacity: 1; }
-.irivals li.out { opacity: .45; text-decoration: line-through; }
-.irivals li.winner.on { color: #fff; }
-.irivals li.winner.on span:last-child { color: #3d72ff; }
-.ictas { display: flex; align-items: center; gap: 26px; flex-wrap: wrap; margin-top: 30px; }
-.ibtn { position: relative; overflow: hidden; isolation: isolate; min-height: 48px; padding: 14px 24px; border: 1px solid #fff; background: transparent; color: #fff;
-  font: 400 13px/1 "Geist", system-ui, sans-serif; letter-spacing: .2em; text-transform: uppercase; cursor: pointer; transition: color .45s var(--ease); }
-.ibtn::before { content: ""; position: absolute; inset: 0; z-index: -1; background: #fff; transform: translateY(101%); transition: transform .45s var(--ease); }
-.ibtn:hover, .ibtn:focus-visible { color: #070708; }
-.ibtn:hover::before, .ibtn:focus-visible::before { transform: none; }
-.ilink, .iskip { color: #fff; font: 400 11px "Geist", system-ui, sans-serif; letter-spacing: .3em; text-transform: uppercase; text-decoration: none; padding: 8px 0;
-  background: linear-gradient(#fff, #fff) left bottom / 0 1px no-repeat; transition: background-size .45s var(--ease); }
-.ilink:hover, .iskip:hover, .ilink:focus-visible, .iskip:focus-visible { background-size: 100% 1px; }
-.iskip { position: absolute; z-index: 2; right: max(24px, 6vw); bottom: max(28px, env(safe-area-inset-bottom, 0px)); color: #8f8f93; }
-html.at-intro, .at-intro body { background: #070708; }
-#main { scroll-margin-top: 72px; }
-.at-intro .top { background: rgba(7, 7, 8, .55); border-bottom-color: rgba(255, 255, 255, .08); color: #fff; }
-.at-intro .nav a { color: #c3c7cf; } .at-intro .nav a:hover, .at-intro .nav a[aria-current="page"] { color: #fff; background: rgba(255, 255, 255, .08); box-shadow: none; }
-.at-intro .pill { color: #c3c7cf; border-color: rgba(255, 255, 255, .15); }
-.at-intro .mk-string { stroke: #fff; }
-.intro-still .intro { height: auto; }
-.intro-still .intro-stage { position: relative; height: auto; min-height: 100vh; }
-.intro-still .iband { display: none; }
-.intro-still .iband:first-child, .intro-still .iband:last-child { display: block; position: relative; opacity: 1; top: auto; transform: none; }
-.intro-still .ibands { position: relative; padding: 18vh 0 12vh; display: grid; gap: 48px; }
-@media (max-width: 860px) {
-  .ibands { width: auto; right: max(24px, 6vw); top: 10vh; bottom: auto; height: 36vh; }
-  .iband { top: 0; transform: none; }
-  .intro-stage::after { background: linear-gradient(180deg, rgba(7, 7, 8, .92) 0%, rgba(7, 7, 8, .6) 38%, rgba(7, 7, 8, 0) 58%); }
-  .idisplay { font-size: clamp(34px, 10vw, 52px); }
-  .isub { font-size: 15px; margin-top: 12px; }
-  .irivals { margin-top: 12px; gap: 6px; font-size: 11px; }
-  .irivals li { grid-template-columns: 7.5rem 1fr; }
-  .ireadout { font-size: 26px; }
-}
+
+/* recorded mode (static hosting): the run-it-yourself note in place of the upload form */
+.rec-note { display: grid; gap: 14px; padding: 20px 22px 22px; }
+.rec-note pre { margin: 0; }
+.rec-note [data-close] svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }

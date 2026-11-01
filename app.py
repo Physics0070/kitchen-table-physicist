@@ -7,7 +7,8 @@ import argparse, datetime, http.server, json, os, re, shutil, subprocess, sys, t
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RUNS = os.path.abspath(os.environ.get("RUNS_DIR", os.path.join(HERE, "runs")))
-WEB = os.path.join(HERE, "web")
+SITE = os.path.join(HERE, "site")    # the landing page and its assets
+WEB = os.path.join(SITE, "lab")      # the bench: one copy, live here, replaying recorded runs on static hosting
 MAX_UPLOAD = 2 << 30  # 2 GB: a minute of 4K slow-mo
 ID = re.compile(r"^[a-z0-9][a-z0-9-]{0,79}$")
 VIDEO_EXT = {".mp4", ".mov", ".m4v", ".webm", ".mkv", ".avi"}
@@ -204,12 +205,20 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         u = urllib.parse.urlparse(self.path)
         parts = [urllib.parse.unquote(p) for p in u.path.strip("/").split("/") if p]
-        if not parts or parts == ["index.html"]:
+        name = lambda p: re.match(r"^[\w-]+(\.[\w-]+)*$", p) and ".." not in p  # plain file names only
+        if not parts or parts == ["index.html"]:  # page 1: what the project is
+            return self.file(os.path.join(SITE, "index.html"))
+        if parts[0] == "assets" and len(parts) == 2 and name(parts[1]):
+            return self.file(os.path.join(SITE, "assets", parts[1]))
+        if parts == ["lab"] and not u.path.endswith("/"):  # relative links inside the bench need the slash
+            self.send_response(301); self.send_header("Location", "/lab/"); self.end_headers(); return
+        if parts == ["lab"] or parts == ["lab", "index.html"]:  # page 2: the live demonstration
             return self.file(os.path.join(WEB, "index.html"))
-        if parts[0] == "web" and len(parts) == 2 and re.match(r"^[\w.-]+$", parts[1]) and ".." not in parts[1]:
+        if parts == ["lab", "mode.js"]:  # the static copy of this file says LIVE = false and replays recorded runs
+            body = b"window.LIVE = true;\n"
+            self.head(200, "text/javascript", len(body)); return self.wfile.write(body)
+        if parts[0] == "lab" and len(parts) == 2 and name(parts[1]):
             return self.file(os.path.join(WEB, parts[1]))
-        if parts[:2] == ["site", "assets"] and len(parts) == 3 and re.match(r"^[\w.-]+\.(js|css)$", parts[2]) and ".." not in parts[2]:
-            return self.file(os.path.join(HERE, "site", "assets", parts[2]))  # the 3D intro shares the showcase's scene
         if parts[0] == "favicon.ico":
             return self.file(os.path.join(WEB, "icon.svg"))
         if parts[:2] == ["api", "health"]:

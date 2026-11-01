@@ -16,7 +16,31 @@ const STAGE_NOTE = {
   report: "Writing the lab report and the overlay video.",
 };
 
+// LIVE is set by mode.js: app.py serves "true"; the static copy is "false" and the bench replays recorded runs,
+// real pipeline output saved by record_runs.py, from the recorded/ folder beside this file.
+const LIVE = window.LIVE !== false;
+const fileUrl = (id, f) => (LIVE ? `/api/runs/${id}/file/${f}` : `recorded/${id}/${f}`);
+const json = async (u) => { const r = await fetch(u); if (!r.ok) throw new Error(`Not found (${r.status})`); return r.json(); };
+
+async function recorded(path) {
+  const u = new URL(path, location.href), p = u.pathname.split("/").filter(Boolean).slice(-5);
+  const at = p.indexOf("api"), q = p.slice(at + 1);  // e.g. ["runs", id, "file", "view.json"]
+  if (q[0] === "health") return { key: false, recorded: true };
+  if (q[0] === "library") {
+    const words = (u.searchParams.get("q") || "").toLowerCase().split(/\s+/).filter(Boolean);
+    return (await json("recorded/library.json")).filter((e) => words.every((w) => JSON.stringify(e).toLowerCase().includes(w)));
+  }
+  const all = await json("recorded/runs.json");
+  if (q.length === 1) return all;
+  if (q.length === 2) { const r = all.find((x) => x.id === q[1]); if (!r) throw new Error("No such recorded run"); return r; }
+  return json(fileUrl(q[1], q[3]));
+}
+
 async function api(path, opts) {
+  if (!LIVE) {
+    if (opts && opts.method && opts.method !== "GET") throw new Error("This is a recorded demo. Run the app on your computer to do that.");
+    return recorded(path);
+  }
   const r = await fetch(path, opts);
   const body = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(body.error || `The server answered ${r.status}`);
@@ -192,7 +216,7 @@ function renderNotebook(v) {
     + (M && M.verdict ? `<span class="verdict ${M.verdict === "CONFIRMED" ? "v-good" : "v-bad"}">${M.verdict === "CONFIRMED" ? "Prediction confirmed" : "Prediction refuted"}: measured ${esc(pm(M.value, M.sigma))}, ${num(M.rel_error * 100, 2)}% off</span>` : "")
     : `<p class="muted">With a model key, the agent proposes the experiment that would best tell this law from its rival, and predicts the number you should measure.</p>`;
 
-  const base = `/api/runs/${v.id}/file/`;
+  const base = fileUrl(v.id, "");
   $("#notebook").innerHTML =
     sec("nb-law", "The law", `<h2>${esc(L.law)}</h2>
       <span class="verdict ${ok ? "v-good" : "v-warn"}">${ok ? "Predicts unseen frames and survives its self-test" : "Predicts unseen frames, but is incomplete"}</span>
@@ -205,7 +229,7 @@ function renderNotebook(v) {
     + sec("", "What stayed constant", consBody)
     + sec("", "Against your library", libBody)
     + sec("", "Next experiment", next)
-    + sec("", "Files", `<div class="files"><a href="${base}report.html" target="_blank" rel="noopener">Lab report</a><a href="${base}overlay.webm" target="_blank" rel="noopener">Overlay video</a><a href="${base}track.csv" download>Track CSV</a><a href="${base}fit.json" download>Law JSON</a></div>`);
+    + sec("", "Files", `<div class="files"><a href="${base}report.html" target="_blank" rel="noopener">Lab report</a>${LIVE ? `<a href="${base}overlay.webm" target="_blank" rel="noopener">Overlay video</a>` : ""}<a href="${base}track.csv" download>Track CSV</a><a href="${base}fit.json" download>Law JSON</a></div>`);
 }
 
 /* ---------- player: one clock for overlay + chart ---------- */
@@ -222,7 +246,7 @@ const player = (() => {
     v = nv; traceOnly = !v.video;
     stage.classList.toggle("trace-only", traceOnly);
     if (!traceOnly) {
-      video.src = `/api/runs/${v.id}/file/${v.video}`;
+      video.src = fileUrl(v.id, v.video);
       video.onerror = () => { traceOnly = true; stage.classList.add("trace-only"); draw(); };
       video.onloadeddata = () => draw();
     } else video.removeAttribute("src");
@@ -402,6 +426,8 @@ $("#lib-q").addEventListener("input", () => { clearTimeout(libTimer); libTimer =
 const dlg = $("#dlg"), form = $("#form");
 let file = null;
 function openDialog() {
+  $("#form").hidden = !LIVE;
+  $("#rec-note").hidden = LIVE;
   $("#verify").innerHTML = `<option value="">Nothing, this is a new experiment</option>` +
     runs.filter((r) => r.state === "done").map((r) => `<option value="${esc(r.id)}">${esc(r.law || r.name)} · ${esc(when(r.created))}</option>`).join("");
   $("#form-error").hidden = true;
@@ -421,6 +447,7 @@ const drop = $("#drop");
 drop.addEventListener("drop", (e) => setFile(e.dataTransfer.files[0]));
 $$('input[name="track"]').forEach((r) => r.addEventListener("change", syncTrack));
 $("#dlg-close").addEventListener("click", () => dlg.close());
+$("[data-close]").addEventListener("click", () => dlg.close());
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -479,6 +506,14 @@ document.addEventListener("click", (e) => {
 
 (async function init() {
   health = await api("/api/health").catch(() => ({ key: false }));
+  if (!LIVE) {  // static hosting: say plainly what this is, and how to run it for real
+    document.documentElement.classList.add("recorded");
+    $("#mode").textContent = "Recorded runs";
+    $("#mode").className = "pill on";
+    $("#mode").title = "Real pipeline output, replayed in your browser. Run the app to analyse your own clips.";
+    await loadRuns();
+    return route();
+  }
   const mode = $("#mode");
   mode.textContent = health.key ? `Models: ${health.provider}` : "Offline mode";
   mode.className = `pill ${health.key ? "on" : "off"}`;
@@ -490,5 +525,4 @@ document.addEventListener("click", (e) => {
   syncTrack();
   await loadRuns();
   route();
-  if (location.hash) $("#main").scrollIntoView();  // a link to a run or the library skips the intro
 })();

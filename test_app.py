@@ -28,7 +28,11 @@ assert call("/api/runs?name=x.mp4", b"x", "POST")[0] == 400  # no key and no col
 assert b"colour" in call("/api/runs?name=x.mp4", b"x", "POST")[1]
 assert call("/api/runs?name=x.mp4&color=green&fps=-3", b"x", "POST")[0] == 400
 s, body, h = call("/")
-assert s == 200 and b"<main" in body and "script-src 'self'" in h["Content-Security-Policy"]
+assert s == 200 and b"<main" in body and b'href="lab/"' in body and "script-src 'self'" in h["Content-Security-Policy"]  # page 1
+s, body, _ = call("/lab")  # page 2: the bench (the redirect to /lab/ is followed)
+assert s == 200 and b"app.js" in body and b"mode.js" in body
+assert b"LIVE = true" in call("/lab/mode.js")[1] and call("/assets/site.js")[0] == 200
+assert call("/lab/..%2Fapp.py")[0] == 404 and call("/assets/..%2F..%2Fapp.py")[0] == 404
 
 # upload a rendered pendulum and let the lab run
 clip = os.path.join(tmp, "pendulum.webm")

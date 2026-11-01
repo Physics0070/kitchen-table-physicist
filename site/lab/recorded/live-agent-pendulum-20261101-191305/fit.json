@@ -1,0 +1,170 @@
+{
+  "law": "A simple pendulum whose swing angle decays exponentially, giving a damped cosine motion in both horizontal and vertical coordinates",
+  "axis": "x",
+  "expr": "c0 + c1*cos(c2*t + c3)*exp(-c4*t)",
+  "params": {
+    "c0": 0.6421496750130977,
+    "c1": 0.13017500723678854,
+    "c2": 4.413925806075409,
+    "c3": -0.014370604888817843,
+    "c4": 0.04899394697097381
+  },
+  "derived": [
+    {
+      "name": "g",
+      "expr": "0.5*c2**2",
+      "unit": "m/s^2",
+      "meaning": "gravitational acceleration inferred from the pendulum's angular frequency (\u03c9 = c2) and string length L = 0.5\u202fm",
+      "value": 9.741370510769224,
+      "sigma": 0.0008035501346339558
+    },
+    {
+      "name": "\u03b3",
+      "expr": "c4",
+      "unit": "s\u207b\u00b9",
+      "meaning": "exponential damping rate of the swing amplitude",
+      "value": 0.04899394697097381,
+      "sigma": 0.0001816049899164961
+    },
+    {
+      "name": "T",
+      "expr": "2*pi/c2",
+      "unit": "s",
+      "meaning": "period of the undamped pendulum",
+      "value": 1.4234913732648822,
+      "sigma": 5.871067974911952e-05
+    }
+  ],
+  "explanation": "The bob swings like a regular pendulum, but air resistance (or internal friction) makes the swing slowly shrink. The horizontal position follows a cosine whose height drops exponentially. From the frequency we can read off g, and the decay rate tells how quickly the motion is damped.",
+  "rival": "c0 + c1*cos(c2*t + c3)  (undamped cosine). It matches the early swings but over\u2011predicts the amplitude after about 2\u202fs, where the real data show clear decay.",
+  "next_experiment": "Repeat the same release with a heavier bob (increase mass) while keeping the string length. Heavier mass should reduce the damping rate \u03b3, making the undamped rival fit better; measuring the new decay will confirm the exponential\u2011damping model.",
+  "prediction": {
+    "quantity": "x\u2011position at t = 6.5\u202fs in a new clip",
+    "expr": "c0 + c1*cos(c2*6.5 + c3)*exp(-c4*6.5)",
+    "unit": "m",
+    "measure": "Read the horizontal coordinate of the bob at 6.5\u202fs from the video and compare to the predicted value",
+    "value": 0.5550179102255727,
+    "sigma": 8.151860357187454e-05
+  },
+  "measured": null,
+  "sigma": {
+    "c0": 1.852459616142476e-05,
+    "c1": 5.3200161362420684e-05,
+    "c2": 0.0001820487629665945,
+    "c3": 0.0004219288202248119,
+    "c4": 0.00018160498992422246
+  },
+  "cov": [
+    [
+      3.431606629438729e-10,
+      -2.1148307080834633e-11,
+      -8.695101566651487e-10,
+      1.7992593195993978e-09,
+      -1.8190505576540404e-10
+    ],
+    [
+      -2.1148307080834633e-11,
+      2.830257168987599e-09,
+      -5.654735056944913e-10,
+      2.031951539217982e-09,
+      8.192996798799812e-09
+    ],
+    [
+      -8.695101566651487e-10,
+      -5.654735056944913e-10,
+      3.314175209766731e-08,
+      -6.623524173527691e-08,
+      -3.6626837650507313e-10
+    ],
+    [
+      1.7992593195993978e-09,
+      2.031951539217982e-09,
+      -6.623524173527691e-08,
+      1.7802392933630166e-07,
+      3.938763810767497e-09
+    ],
+    [
+      -1.8190505576540404e-10,
+      8.192996798799812e-09,
+      -3.6626837650507313e-10,
+      3.938763810767497e-09,
+      3.298037236537694e-08
+    ]
+  ],
+  "train_rmse": 0.00039853124919842116,
+  "holdout_rmse": 0.000561210100421043,
+  "aic": -7864.690993622924,
+  "bic": -7843.588042772425,
+  "score": -3221.7707152397365,
+  "falsify": {
+    "verdict": "FALSIFIED: c2, c3 drift",
+    "drift": [
+      {
+        "param": "c2",
+        "first": 4.413783322400253,
+        "second": 4.41700999564313,
+        "z": 6.944019188502981
+      },
+      {
+        "param": "c3",
+        "first": -0.01416301567875837,
+        "second": -0.025470624864933303,
+        "z": 7.236074739593027
+      }
+    ]
+  },
+  "split": 0.7,
+  "note": "Rendered pendulum, 0.5 m string, released at 15 degrees",
+  "csv": "runs\\live-agent-pendulum-20261101-191305\\track.csv",
+  "tried": 139,
+  "candidates": [
+    {
+      "expr": "c0",
+      "k": 1,
+      "holdout_rmse": 0.003894180672512901,
+      "score": -2402.5701399883237
+    },
+    {
+      "expr": "c0 + c1*t",
+      "k": 2,
+      "holdout_rmse": 0.0038263681930805647,
+      "score": -2404.81440859906
+    },
+    {
+      "expr": "c0 + c1*exp(-c2*t)",
+      "k": 3,
+      "holdout_rmse": 0.003824203793615206,
+      "score": -2399.680074425543
+    },
+    {
+      "expr": "c0 + c1*cos(c2*t+c3)",
+      "k": 4,
+      "holdout_rmse": 0.002478783372142431,
+      "score": -2582.474948663686
+    },
+    {
+      "expr": "c0 + (c1*cos(c2*t+c3))*exp(-c4*t)",
+      "k": 5,
+      "holdout_rmse": 0.0005612100800082193,
+      "score": -3221.7707310255637
+    },
+    {
+      "expr": "c0 + (c1*cos(c2*t+c3))*exp(-c5*t) + c4*t",
+      "k": 6,
+      "holdout_rmse": 0.00042830533757468844,
+      "score": -3333.683223533878
+    },
+    {
+      "expr": "c0 + (c1*cos(c2*t+c3))*exp(-c6*t) + c4*exp(-c5*t)",
+      "k": 7,
+      "holdout_rmse": 0.00034629471873453605,
+      "score": -3420.5483535596454
+    },
+    {
+      "expr": "(c0)*exp(-c7*t) + (c1*cos(c2*t+c3))*exp(-c6*t) + c4*exp(-c5*t)",
+      "k": 8,
+      "holdout_rmse": 0.00034264908830708034,
+      "score": -3419.7616272528408
+    }
+  ]
+}

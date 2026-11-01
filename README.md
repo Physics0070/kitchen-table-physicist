@@ -16,8 +16,18 @@ clip.mp4 ─► see.py ─► track.py ─► law.py ─► conserve.py ─► l
 
 ```
 pip install -r requirements.txt
-python app.py            # open http://127.0.0.1:8000
+python app.py            # http://127.0.0.1:8000
 ```
+
+Two pages:
+
+- **`/` (page 1): what the project is.** The 3D story of a falling ball, the proof numbers, how it works, a
+  hold-to-test of the self-test, the questions judges ask.
+- **`/lab/` (page 2): the demonstration.** The working bench: upload a clip, watch the stages, read the law.
+
+The same two pages work on static hosting (open `site/`): the bench then replays recorded runs, real pipeline
+output saved with `python record_runs.py <run id>`, and says so. One of them is a live run where a model played
+the scientist.
 
 **Your API key.** Copy `.env.example` to `.env` in this folder and paste the key after `MODEL_API_KEY=`. The app and
 `lab.py` read it at startup; `.env` is git-ignored and the key is never printed. (A real environment variable wins
