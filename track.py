@@ -106,6 +106,8 @@ def main():
     ap.add_argument("--every", type=int, default=1, help="use every Nth frame")
     ap.add_argument("--max-frames", type=int, default=600)
     a = ap.parse_args()
+    from app import load_env
+    load_env()  # keys from .env
 
     prompts = [p.strip() for p in a.prompt.split(";")]
     if a.plan:

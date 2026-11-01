@@ -9,9 +9,12 @@
 <link rel="icon" href="/web/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300&family=Geist:wght@300;400&family=Geist+Mono:wght@400&family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/web/app.css">
+<script src="/site/assets/data.js" defer></script>
 <script src="/web/app.js" defer></script>
+<script src="/web/intro.js" defer></script>
+<script type="module" src="/site/assets/scene3d.js"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -28,6 +31,26 @@
   <span class="pill" id="mode" title="">Checking models</span>
   <button class="btn primary" id="new" type="button">New experiment</button>
 </header>
+
+<section class="intro" id="intro" aria-label="What this lab does">
+  <div class="intro-stage">
+    <canvas id="gl" role="img" aria-label="A falling ball in a dark observatory. White flashes are measured frames; blue rings are where the law predicted the ball would be, hung in space before it got there."></canvas>
+    <div id="lens" aria-hidden="true"></div>
+    <div class="ibands">
+      <div class="iband" data-a="0" data-b="0.15"><p class="idisplay">Drop anything in front of a phone.</p><p class="isub">Scroll, and watch it work the law out.</p></div>
+      <div class="iband" data-a="0.17" data-b="0.44"><p class="idisplay">It measures every frame.</p><p class="isub">Thirty flashes a second, turned from pixels into metres against a sheet of A4 paper.</p></div>
+      <div class="iband" data-a="0.46" data-b="0.63"><p class="idisplay">It finds the law. Nobody told it which.</p><ol class="irivals" id="irivals"></ol></div>
+      <div class="iband" data-a="0.65" data-b="0.88"><p class="idisplay">Then it predicts what it has <em>not</em> seen.</p><p class="isub">The blue rings were hung before the ball got there.</p></div>
+      <div class="iband" data-a="0.90" data-b="1.01">
+        <p class="imicro">Found, not given</p>
+        <p class="ireadout" id="ig">g = 9.808 ± 0.002 m/s²</p>
+        <p class="isub">Your turn. Film something that moves and the bench below does the same to it.</p>
+        <div class="ictas"><button class="ibtn" type="button" data-act="new">New experiment</button><a class="ilink" href="#bench">Open the bench</a></div>
+      </div>
+    </div>
+    <a class="iskip" href="#bench">Skip the intro</a>
+  </div>
+</section>
 
 <main id="main" tabindex="-1">
   <section id="bench-view" aria-labelledby="run-title">

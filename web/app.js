@@ -468,19 +468,27 @@ document.addEventListener("click", async (e) => {
 });
 $("#new").addEventListener("click", openDialog);
 $("#run-select").addEventListener("change", (e) => (location.hash = `run=${e.target.value}`));
-window.addEventListener("hashchange", route);
+const toBench = () => $("#main").scrollIntoView({ behavior: reduced ? "auto" : "smooth" });  // past the intro
+window.addEventListener("hashchange", () => { route(); toBench(); });
+document.addEventListener("click", (e) => {
+  if (!e.target.closest('a[href="#bench"]')) return;
+  e.preventDefault();
+  if (location.hash !== "#bench") history.pushState(null, "", "#bench");
+  route(); toBench();
+});
 
 (async function init() {
   health = await api("/api/health").catch(() => ({ key: false }));
   const mode = $("#mode");
-  mode.textContent = health.key ? "Models connected" : "Offline mode";
+  mode.textContent = health.key ? `Models: ${health.provider}` : "Offline mode";
   mode.className = `pill ${health.key ? "on" : "off"}`;
-  mode.title = health.key ? "Muse Wonder, Muse Spark and SAM are available" : "No MODEL_API_KEY: the lab tracks a coloured sticker and finds laws without a model";
-  if (!health.key) {
+  mode.title = health.key ? `The agent and vision model run on ${health.provider}${health.sam ? ", with SAM tracking" : ""}` : "No key in .env: the lab tracks a coloured sticker and finds laws without a model";
+  if (!health.key || !health.sam) {
     $("#track-auto").disabled = true;
-    $("#auto-note").textContent = "Needs MODEL_API_KEY in the app's environment";
+    $("#auto-note").textContent = health.key ? `Needs SAM, which ${health.provider} doesn't offer: use a sticker` : "Needs a model key in .env";
   }
   syncTrack();
   await loadRuns();
   route();
+  if (location.hash) $("#main").scrollIntoView();  // a link to a run or the library skips the intro
 })();

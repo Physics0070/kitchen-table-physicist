@@ -37,9 +37,11 @@ def main():
     ap.add_argument("-o", "--out", default="plan.json")
     ap.add_argument("--frames", type=int, default=6, help="frames shown to the model (cost vs sight)")
     a = ap.parse_args()
+    from app import load_env
+    load_env()  # keys from .env
 
     from openai import OpenAI
-    client = OpenAI(base_url=os.environ.get("MODEL_BASE_URL", "https://api.meta.ai/v1"), api_key=os.environ["MODEL_API_KEY"])
+    client = OpenAI(base_url=os.environ.get("MODEL_BASE_URL", "https://api.meta.ai/v1"), api_key=os.environ["MODEL_API_KEY"], timeout=120, max_retries=4)
     # ponytail: sends sampled frames as images, the common OpenAI-compatible format. Wonder also takes
     # video directly; switch to that once its input schema is checked on dev.meta.ai.
     content = [{"type": "text", "text": ASK}] + [{"type": "image_url", "image_url": {"url": u}} for u in frames(a.video, a.frames)]

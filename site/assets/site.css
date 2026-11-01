@@ -61,16 +61,18 @@ main, .corner, .foot { position: relative; z-index: 1; }
 .body { color: var(--muted); font-size: 16px; margin: 26px 0 0; max-width: 46ch; }
 
 /* ---------- hero: the drop ---------- */
-.drop { position: relative; height: 640vh; }
+.drop { position: relative; height: 900vh; }
 .stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
 #drop { position: absolute; top: 0; right: 0; width: 60%; height: 100%; }
 /* WebGL takes the whole stage; a soft scrim keeps the words side readable */
-#gl { position: absolute; inset: 0; width: 100%; height: 100%; display: none; }
+#gl { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: none; }
 .gl #gl { display: block; }
-.gl #drop { display: none; }
+.gl #drop, .gl #field { display: none; }
+/* after the hero the 3D keeps orbiting behind the sections; a scrim on the words side keeps them readable */
+.gl .sec, .gl .foot { background: rgba(7, 7, 8, .82); }
 .gl .stage::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background: linear-gradient(90deg, rgba(7, 7, 8, .9) 0%, rgba(7, 7, 8, .55) 30%, rgba(7, 7, 8, 0) 56%); }
-#lens { position: absolute; inset: 0; z-index: 1; opacity: 0; pointer-events: none; mix-blend-mode: screen;
+#lens { position: fixed; inset: 0; z-index: 1; opacity: 0; pointer-events: none; mix-blend-mode: screen;
   background: radial-gradient(circle at 62% 50%, rgba(160, 195, 255, .95), rgba(25, 84, 236, .35) 45%, rgba(7, 7, 8, 0) 75%); }
 .gl.in-hero #field { opacity: 0; }
 #field { transition: opacity .6s; }
@@ -155,6 +157,7 @@ html:not(.scrub) .scrollcue { display: none; }
   .mark span { max-width: 10ch; white-space: normal; }
   #drop { width: 100%; height: 62%; top: auto; bottom: 0; }
   .gl .stage::after { background: linear-gradient(180deg, rgba(7, 7, 8, .92) 0%, rgba(7, 7, 8, .6) 36%, rgba(7, 7, 8, 0) 56%); }
+  .gl .sec, .gl .foot { background: rgba(7, 7, 8, .8); }
   .bands { width: auto; right: var(--gut); top: 9vh; bottom: auto; height: 34vh; }
   .band { top: 0; transform: none; }
   .band::before { inset: -30% -10%; }

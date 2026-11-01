@@ -4,7 +4,7 @@
   python law.py track40.csv --note "same pendulum, 40 cm" --verify fit.json
   python law.py track.csv --offline          # symbolic search only, no API key needed
 """
-import argparse, ast, csv, json, os, re, warnings
+import argparse, ast, csv, json, os, re, sys, warnings
 import numpy as np
 from scipy.optimize import curve_fit
 
@@ -184,7 +184,12 @@ def ladder(found):
 
 
 def brief(r):
-    return {k: v for k, v in r.items() if k not in ("cov", "terms")}
+    """What the agent sees of a fit: only what it reasons with, rounded (provider token budgets can be 8k/minute)."""
+    if "error" in r:
+        return r
+    g = lambda v: None if v is None else float(f"{v:.4g}")
+    return {"expr": r["expr"], "params": {k: g(v) for k, v in r["params"].items()},
+            "sigma": {k: g(v) for k, v in r["sigma"].items()}, "holdout_rmse": g(r["holdout_rmse"]), "score": round(r["score"], 1)}
 
 
 TOOLS = [{"type": "function", "function": {
@@ -226,14 +231,26 @@ def summary(d, note, verify):
 
 def agent(data, note, verify, turns, seen):
     from openai import OpenAI
-    client = OpenAI(base_url=os.environ.get("MODEL_BASE_URL", "https://api.meta.ai/v1"), api_key=os.environ["MODEL_API_KEY"])
+    client = OpenAI(base_url=os.environ.get("MODEL_BASE_URL", "https://api.meta.ai/v1"), api_key=os.environ["MODEL_API_KEY"], timeout=120, max_retries=4)
     model = os.environ.get("MUSE_MODEL", "muse-spark-1.3")
     msgs = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": summary(data, note, verify)}]
     for _ in range(turns):
         m = client.chat.completions.create(model=model, messages=msgs, tools=TOOLS).choices[0].message
         msgs.append(m.model_dump(exclude_none=True))
-        if not m.tool_calls:
-            break
+        if not m.tool_calls:  # a final answer: accept it only if the law really fits, else hand back the reason
+            text = m.content or ""
+            try:
+                r = json.loads(text[text.find("{"): text.rfind("}") + 1])
+                check = fit(data, r["axis"], r["expr"], list(r["params"]), list(r["params"].values()))
+                if "error" in check:
+                    raise ValueError(check["error"])
+                return r
+            except (ValueError, KeyError, TypeError, AttributeError) as e:
+                print(f"final answer rejected: {e}")
+                msgs.append({"role": "user", "content": f"Your final answer was rejected: {e}. The expr may use only numbers, t, "
+                             "your params, + - * / ** ( ) and sin cos exp sqrt log tanh abs pi, and params must map names to "
+                             "numbers. Reply again with ONLY the corrected JSON."})
+                continue
         for c in m.tool_calls:
             a = json.loads(c.function.arguments)
             if a.get("axis") not in data:
@@ -241,15 +258,12 @@ def agent(data, note, verify, turns, seen):
             elif c.function.name == "search":
                 found = discover(data, a["axis"])
                 seen += found
-                r = [brief(x) for x in found[:5]]
+                r = [brief(x) for x in found[:3]]
             else:
                 r = brief(fit(data, a["axis"], a["expr"], a["params"], a.get("p0")))
             print(f"{c.function.name} {a}\n    -> {str(r)[:300]}")
             msgs.append({"role": "tool", "tool_call_id": c.id, "content": json.dumps(r)})
-    else:
-        raise SystemExit("agent ran out of turns")
-    text = m.content or ""
-    return json.loads(text[text.find("{"): text.rfind("}") + 1])
+    raise SystemExit("agent ran out of turns")
 
 
 def offline(data, seen):
@@ -322,6 +336,9 @@ def main():
     ap.add_argument("-o", "--out", default="fit.json")
     ap.add_argument("--turns", type=int, default=16)
     a = ap.parse_args()
+    from app import load_env
+    load_env()  # keys from .env
+    sys.stdout.reconfigure(errors="replace")  # model text can hold characters a Windows console can't print
 
     data = load(a.csv)
     verify = (json.load(open(a.verify)).get("prediction") or None) if a.verify else None

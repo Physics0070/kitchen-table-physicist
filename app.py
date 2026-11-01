@@ -16,7 +16,7 @@ FILES = {"overlay.webm", "report.html", "track.csv", "fit.json", "view.json"}  #
 TYPES = {".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".json": "application/json",
          ".csv": "text/csv", ".webm": "video/webm", ".mp4": "video/mp4", ".mov": "video/quicktime", ".m4v": "video/mp4",
          ".mkv": "video/x-matroska", ".avi": "video/x-msvideo", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon"}
-CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+CSP = ("default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
        "font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; frame-src 'self'; frame-ancestors 'self'")
 jobs, lock = {}, threading.Lock()
 
@@ -24,12 +24,21 @@ jobs, lock = {}, threading.Lock()
 def load_env(path=os.path.join(HERE, ".env")):
     """KEY=value lines from .env into the environment (never overrides a real env var, never printed).
     The lab runs as a child process, so it inherits these."""
-    if not os.path.exists(path):
-        return
-    for line in open(path, encoding="utf-8"):
-        k, sep, v = line.strip().partition("=")
-        if sep and k and not k.startswith("#"):
-            os.environ.setdefault(k.strip(), v.strip().strip("'\""))
+    if os.path.exists(path):
+        for line in open(path, encoding="utf-8"):
+            k, sep, v = line.strip().partition("=")
+            if sep and k and not k.startswith("#"):
+                os.environ.setdefault(k.strip(), v.strip().strip("'\""))
+    if not os.environ.get("MODEL_API_KEY") and os.environ.get("GROQ_API_KEY"):  # Groq: same API shape, its own models
+        os.environ["MODEL_API_KEY"] = os.environ["GROQ_API_KEY"]
+        os.environ.setdefault("MODEL_BASE_URL", "https://api.groq.com/openai/v1")
+        os.environ.setdefault("MUSE_MODEL", "openai/gpt-oss-120b")
+        os.environ.setdefault("WONDER_MODEL", "qwen/qwen3.8-27b")
+
+
+def has_sam():
+    """SAM 3.1 is only on the Meta Model API; other providers track a coloured sticker."""
+    return "api.meta.ai" in os.environ.get("MODEL_BASE_URL", "https://api.meta.ai/v1")
 
 
 def read_json(path, default=None):
@@ -102,8 +111,8 @@ def options(q):
         args += ["--verify", os.path.join(v, "fit.json")]
     if g("offline") in ("1", "true", "on") or not os.environ.get("MODEL_API_KEY"):
         args.append("--offline")
-    if not g("color") and not os.environ.get("MODEL_API_KEY"):
-        raise ValueError("without MODEL_API_KEY the app can only track a colour marker: pick its colour")
+    if not g("color") and not (os.environ.get("MODEL_API_KEY") and has_sam()):
+        raise ValueError("object tracking without a sticker needs SAM on the Meta Model API: pick the sticker's colour")
     return args
 
 
@@ -199,6 +208,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return self.file(os.path.join(WEB, "index.html"))
         if parts[0] == "web" and len(parts) == 2 and re.match(r"^[\w.-]+$", parts[1]) and ".." not in parts[1]:
             return self.file(os.path.join(WEB, parts[1]))
+        if parts[:2] == ["site", "assets"] and len(parts) == 3 and re.match(r"^[\w.-]+\.(js|css)$", parts[2]) and ".." not in parts[2]:
+            return self.file(os.path.join(HERE, "site", "assets", parts[2]))  # the 3D intro shares the showcase's scene
         if parts[0] == "favicon.ico":
             return self.file(os.path.join(WEB, "icon.svg"))
         if parts[:2] == ["api", "health"]:
@@ -207,7 +218,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 has_sdk = True
             except ImportError:
                 has_sdk = False
-            return self.json({"key": bool(os.environ.get("MODEL_API_KEY")), "sdk": has_sdk})
+            return self.json({"key": bool(os.environ.get("MODEL_API_KEY")), "sdk": has_sdk, "sam": has_sam(),
+                              "provider": urllib.parse.urlparse(os.environ.get("MODEL_BASE_URL", "https://api.meta.ai/v1")).hostname})
         if parts[:2] == ["api", "runs"] and len(parts) == 2:
             runs = [status(r) for r in os.listdir(RUNS) if run_dir(r)] if os.path.isdir(RUNS) else []
             return self.json(sorted(runs, key=lambda s: s.get("created", ""), reverse=True))

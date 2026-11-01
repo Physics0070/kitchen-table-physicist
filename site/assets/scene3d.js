@@ -1,10 +1,11 @@
 // The drop in 3D. No loop of its own: site.js's single clock calls KTP3D.render(p, t, now).
 // Same data, same meanings: white = measured, cobalt = the law. Falls back to the 2D canvas if WebGL is unavailable.
-import * as THREE from "three";
-import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
-import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
-import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
-import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+// jsDelivr's +esm builds point every addon at the same three build, so no import map is needed (the app's CSP allows it).
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/+esm";
+import { EffectComposer } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js/+esm";
+import { RenderPass } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/RenderPass.js/+esm";
+import { UnrealBloomPass } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js/+esm";
+import { OutputPass } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/OutputPass.js/+esm";
 
 const D = window.KTP && window.KTP.drop;
 const canvas = document.getElementById("gl"), lens = document.getElementById("lens");
@@ -157,8 +158,9 @@ async function init() {
     camera.updateProjectionMatrix();
   }
 
-  const v = new THREE.Vector3(), tg = new THREE.Vector3();
-  function render(p, tc, now = 0) {
+  const v = new THREE.Vector3(), tg = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
+  // p: the story (0..1 through the hero). e: the epilogue (0..1 through the rest of the page), a slow orbit of the result.
+  function render(p, tc, now = 0, e = 0) {
     size();
     const j = clamp(Math.round(tc * 240), 0, n - 1);
     ball.position.set(X(D.t[j]), Y(D.y[j]), 0);
@@ -180,7 +182,10 @@ async function init() {
     posPath.getPoint(along(p), v); tgtPath.getPoint(along(p), tg);
     const drift = Math.sin(now / 4200) * 0.06;  // the camera breathes at rest
     const back = camera.aspect < 1 ? Math.min(2.4, 1.1 / camera.aspect) : 1;  // portrait screens: pull back so the arc fits
-    v.sub(tg).multiplyScalar(back).add(tg);
+    v.sub(tg).multiplyScalar(back);
+    if (e > 0) { v.applyAxisAngle(UP, e * Math.PI * 1.15); v.y += e * 2.2; v.multiplyScalar(1 + e * 0.2); }
+    v.add(tg);
+    renderer.toneMappingExposure = 1 - 0.45 * sstep(e, 0, 0.06);  // dims behind the sections so words stay readable
     camera.position.set(v.x + drift, v.y + drift * 0.5, v.z);
     camera.lookAt(tg);
     const flash = clamp(1 - Math.abs(camera.position.x - xs) / 0.4, 0, 1) * sstep(p, 0.66, 0.7) * (1 - sstep(p, 0.76, 0.8));

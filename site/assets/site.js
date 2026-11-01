@@ -211,7 +211,11 @@
   }
 
   /* ---------- the one clock ---------- */
-  let raf = 0, t0 = performance.now(), gl = null, last3d = 0, heroOn = true;
+  let raf = 0, t0 = performance.now(), gl = null, last3d = 0, heroOn = true, eTarget = 0, eShown = 0;
+  function epilogue() {  // 0..1 through everything after the hero: the 3D keeps moving to the last section
+    const end = hero.offsetTop + hero.offsetHeight - innerHeight;
+    return clamp((scrollY - end) / Math.max(1, root.scrollHeight - innerHeight - end), 0, 1);
+  }
   const hero2d = (p) => (gl ? gl.render(p, timeAt(p), performance.now()) : drawDrop(p));
   function frame(now) {
     raf = 0;
@@ -220,8 +224,10 @@
     if (scrub) {
       shown += (target - shown) * (1 - Math.pow(1 - 0.14, dt / 16.667));
       if (Math.abs(target - shown) < 0.0004) shown = target; else busy = true;
-      if (!gl) drawDrop(shown);
-      else if (heroOn && (busy || now - last3d > 33)) { gl.render(shown, timeAt(shown), now); last3d = now; }
+      eShown += (eTarget - eShown) * (1 - Math.pow(1 - 0.1, dt / 16.667));
+      if (Math.abs(eTarget - eShown) < 0.0004) eShown = eTarget; else busy = true;
+      if (!gl) { if (heroOn) drawDrop(shown); }
+      else if (busy || now - last3d > 33) { gl.render(shown, timeAt(shown), now, eShown); last3d = now; }
       drawBands(shown, now);
       if (now - t0 < 950) busy = true;
     }
@@ -237,10 +243,10 @@
     scrub = !RM.matches;
     root.classList.toggle("scrub", scrub);
     bands.forEach((b) => { b.o = -1; b.y = -1; b.el.style.opacity = ""; b.el.style.translate = ""; b.el.removeAttribute("aria-hidden"); });
-    if (!scrub) { hero2d(1); h = holding ? 1 : h; drawField(0); } else { target = shown = heroProgress(); t0 = performance.now() - (shown > 0.02 ? 2000 : 0); }
+    if (!scrub) { hero2d(1); h = holding ? 1 : h; drawField(0); } else { target = shown = heroProgress(); eTarget = eShown = epilogue(); t0 = performance.now() - (shown > 0.02 ? 2000 : 0); }
     sayHold(); drawSplit(); wake();
   }
-  addEventListener("scroll", () => { if (scrub) { target = heroProgress(); wake(); } }, { passive: true });
+  addEventListener("scroll", () => { if (scrub) { target = heroProgress(); eTarget = epilogue(); wake(); } }, { passive: true });
   addEventListener("resize", () => { if (!scrub) hero2d(1); drawSplit(); wake(); });
   addEventListener("ktp3d", () => { gl = window.KTP3D; applyMode(); });  // the WebGL scene is ready: it takes over the hero
   new IntersectionObserver(([e]) => { heroOn = e.isIntersecting; root.classList.toggle("in-hero", heroOn); if (heroOn) wake(); }).observe(hero);
